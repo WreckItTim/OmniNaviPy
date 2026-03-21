@@ -1,1 +1,21 @@
-The Episodic class in Environment.py handles step-by-step operations of an abstract agent, by following a cycle where in each step custom python objects are used to: observe the environment using sensors equipped onboard the agent, determine actions for the agent to execute, determine when to terminate the current episode, apply rewards for DRL, and optinally execute VLA models for even higher level logic.
+🔄 The Episodic Control Engine (Environment.py)
+At the heart of the framework is the Episodic class, which manages the step-by-step operational lifecycle of any connected agent. Highly modular by design, this class enforces a strict, cyclical pipeline during each step:
+
+Observe: Fetch real-time or cached environmental data using abstract sensor objects equipped on the agent.
+
+Think (Optional VLA): Route complex visual/textual data through Vision-Language-Action models for high-level reasoning and intent generation.
+
+Decide (DRL): Determine the optimal next action based on the current policy.
+
+Act: Translate the chosen action into physical execution using a low-level PID motor controller.
+
+Evaluate: Apply DRL reward functions and evaluate termination conditions to conclude or continue the episode.
+
+🤖 The Universal Agent Interface (Agent.py)
+The abstract Agent class serves as the ultimate bridge between the episodic environment and the physical/simulated world. It defines all interactions through linked abstract action and sensor objects.
+
+Currently, the framework supports two primary backend environments out of the box:
+
+Microsoft AirSim: For high-fidelity, real-time simulated physics and vision testing.
+
+Discrete Data-Map Cache: A high-speed execution mode that uses pre-cached observations at all (x, y, z) coordinates. This allows for lightning-fast DRL inference times and safely obfuscates low-level hardware control during heavy training loop
