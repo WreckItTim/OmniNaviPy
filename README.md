@@ -2,15 +2,15 @@
 
 At the heart of the framework is the Episodic class, which manages the step-by-step operational lifecycle of any connected agent. Highly modular by design, this class enforces a strict, cyclical pipeline during each step:
 
-Observe: Fetch real-time or cached environmental data using abstract sensor objects equipped on the agent.
+_Observe:_ Fetch real-time or cached environmental data using abstract sensor objects equipped on the agent, and execute any vision models to further process data for downstream tasks.
 
-Think (Optional VLA): Route complex visual/textual data through Vision-Language-Action models for high-level reasoning and intent generation.
+_Think (Optional VLA):_ Route complex visual/textual data through Vision-Language-Action models for high-level reasoning and intent generation.
 
-Decide (DRL): Determine the optimal next action based on the current policy.
+_Decide (DRL):_ Determine the optimal next action based on the current policy.
 
-Act: Translate the chosen action into physical execution using a low-level PID motor controller.
+_Act:_ Translate the chosen action into physical execution using a low-level PID motor controller.
 
-Evaluate: Apply DRL reward functions and evaluate termination conditions to conclude or continue the episode.
+_Evaluate:_ Apply DRL reward functions and evaluate termination conditions to conclude or continue the episode.
 
 🤖 **The Abstract Agent Interface (Agent.py)**
 
