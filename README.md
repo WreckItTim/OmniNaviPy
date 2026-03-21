@@ -1,4 +1,5 @@
-🔄 The Episodic Control Engine (Environment.py)
+🔄 **The main control engine (Environment.py)**
+
 At the heart of the framework is the Episodic class, which manages the step-by-step operational lifecycle of any connected agent. Highly modular by design, this class enforces a strict, cyclical pipeline during each step:
 
 Observe: Fetch real-time or cached environmental data using abstract sensor objects equipped on the agent.
@@ -11,7 +12,8 @@ Act: Translate the chosen action into physical execution using a low-level PID m
 
 Evaluate: Apply DRL reward functions and evaluate termination conditions to conclude or continue the episode.
 
-🤖 The Universal Agent Interface (Agent.py)
+🤖 **The Abstract Agent Interface (Agent.py)**
+
 The abstract Agent class serves as the ultimate bridge between the episodic environment and the physical/simulated world. It defines all interactions through linked abstract action and sensor objects.
 
 Currently, the framework supports two primary backend environments out of the box:
