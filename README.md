@@ -18,6 +18,6 @@ The abstract Agent class serves as the ultimate bridge between the episodic envi
 
 Currently, the framework supports two primary backend environments out of the box:
 
-Microsoft AirSim: For high-fidelity, real-time simulated physics and vision testing.
+_Microsoft AirSim:_ For high-fidelity, real-time simulated physics and vision testing.
 
-Discrete Data-Map Cache: A high-speed execution mode that uses pre-cached observations at all (x, y, z) coordinates. This allows for lightning-fast DRL inference times and safely obfuscates low-level hardware control during heavy training loop
+_Discrete Data-Map Cache:_ A high-speed execution mode that uses pre-cached observations at all (x, y, z) coordinates. This allows for lightning-fast DRL inference times and safely obfuscates low-level hardware control during an otherwise heavy training and testing loop.
