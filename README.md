@@ -35,3 +35,5 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 🚀 **First Run**
 
 Run the evaluate_navigation.py file to test run everything, which by default will use the _DataMap_ agent and a two-tier navigational framework that uses the DRL_beta policy (previosly learned DQN) to direct the drone which actions to take. Feel free to play with the paramters after that. Happy navigating!
+
+Note that this uses a static hold out set of trajectories to evaluate on, which should be held out from training all future policies. This creates a consistent testing metric across different configurations for robust model evaluations.
