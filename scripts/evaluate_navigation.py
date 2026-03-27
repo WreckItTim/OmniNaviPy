@@ -24,8 +24,8 @@ if agent_type == 'MicrosoftAirSim':
 # Discrete Data-Map Cache (reads data files from disk, cache in RAM, use voxels for collision detection and movement)
 if agent_type == 'DataMap':
     from OmniNaviPy.modules import DataMap
-    memory_saver = True # False will cache all data as its accessed into RAM (requires < 60gb for some larger maps)
-    cache_size = 4 # if memory_saver is True, then this is the size of the cache for storing the number of recently accessed datamap files
+    memory_saver = False # WARNING - False will cache all data as its accessed into RAM (requires < 60gb for some larger maps), use True to save RAM
+    cache_size = 4 # if memory_saver is True, then this is the parameter which controls the size of the cache for storing the number of recently accessed datamap files
     agent = DataMap.DataMap(map_name=map_name, memory_saver=memory_saver, cache_size=cache_size)
 # set bounds of map that agent can move in
 if map_name in ['AirSimNH']:
