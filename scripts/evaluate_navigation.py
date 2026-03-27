@@ -14,8 +14,8 @@ map_name = 'AirSimNH' # which map to use, should correspond to that in the data 
 # Microsoft AirSim (realistic physics-based simulator ran in real-time)
 if agent_type == 'MicrosoftAirSim':
     from OmniNaviPy.modules import MicrosoftAirSim
-    # set absolute path to AirSim release .sh/.exe file, or set to None if you have already launched AirSim separately
-    release_path = Path(Utils.get_global('repository_directory'), 'local', 'airsim_maps', map_name, f'{map_name}.sh')
+    # set absolute path to AirSim release .sh/.exe file (assumes Linux .sh files), or set to None if you have already launched AirSim separately
+    release_path = Path(Utils.get_global('repository_directory'), 'local', 'airsim_maps', map_name, 'LinuxNoEditor', f'{map_name}.sh')
     flags = ['-windowed'] # command line arguments to pass when launching AirSim, this uses windowed rather than fulls screen
     clock_speed = 10 # speed up (>1) or slow down (<1) the simulation, generally don't go higher than 10, depends on your setup
     move_speed = 1 # speed at which drone moves when taking an action, in meters per second
@@ -62,9 +62,14 @@ spawner = Spawner.Spawner(agent, trajectories)
 
 # make and set directory to write all output files to
 import os
-write_dir = Path(Utils.get_global('repository_directory'), 'results', 'datamap_gemma3')
+overwrite = True # WARNING - True will not read any already written episodes.p from file and continue previous evaluations and will instead overwrite it
+                  # False will read in any already written episodes.p and continue previous evaluations until it reaches the maximum number of episodes
+write_dir = Path(Utils.get_global('repository_directory'), 'results', 'temp')
 os.makedirs(write_dir, exist_ok=True)
-
+episodes_write_path = Path(write_dir, f'episodes.p')
+ckpt_freq = 1 # frequency of episodes to checkpoint at, None will not checkpoint
+ckpt_dir = Path(write_dir, 'checkpoints')
+os.makedirs(ckpt_dir, exist_ok=True)
 
 ## optionally, use MLLM for high-level logic?
 from OmniNaviPy.modules import Other
@@ -91,13 +96,7 @@ environment = Environment.Episodic(agent, policy, spawner, actor, observer, term
 
 ## create evaluation Run 
 from OmniNaviPy.modules import Run
-episodes_write_path = Path(write_dir, f'episodes.p')
-ckpt_freq = 1 # frequency of episodes to checkpoint at, None will not checkpoint
-ckpt_dir = Path(write_dir, 'checkpoints')
-os.makedirs(ckpt_dir, exist_ok=True)
 run = Run.Evaluate(environment, ckpt_freq=ckpt_freq, ckpt_dir=ckpt_dir)
-overwrite = True # True will not read any already written episodes.p from file and continue previous evaluations and will instead overwrite it
-                  # False will read in any already written episodes.p and continue previous evaluations until it reaches the maximum number of episodes
 view_live_plt = True # if True will show live visualization of depth map and state map (if provided) during evaluation, only works if using MLLM for high-level logic since it writes images to file for visual input to MLLM
 episodes = run.run(write_path=episodes_write_path, overwrite=overwrite, view_live_plt=view_live_plt, state_map_path=state_map_path)
 
