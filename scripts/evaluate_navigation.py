@@ -24,8 +24,8 @@ if agent_type == 'MicrosoftAirSim':
 # Discrete Data-Map Cache (reads data files from disk, cache in RAM, use voxels for collision detection and movement)
 if agent_type == 'DataMap':
     from OmniNaviPy.modules import DataMap
-    memory_saver = False # False will cache all data as its accessed into RAM
-    cache_size = 8 # if memory_saver is True, then this is the size of the cache for storing the number of recently accessed datamap files
+    memory_saver = True # False will cache all data as its accessed into RAM (requires < 60gb for some larger maps)
+    cache_size = 4 # if memory_saver is True, then this is the size of the cache for storing the number of recently accessed datamap files
     agent = DataMap.DataMap(map_name=map_name, memory_saver=memory_saver, cache_size=cache_size)
 # set bounds of map that agent can move in
 if map_name in ['AirSimNH']:
@@ -36,9 +36,9 @@ agent.set_bounds(x_min, x_max, y_min, y_max, z_min, z_max)
 ## load policy to evaluate with
 from OmniNaviPy.modules import Config
 from OmniNaviPy.modules import Policy
-policy_name = 'DRL_beta'
+policy_name = 'DQN_beta'
 policy_device = 'cuda:0' # load policy onto this device (cpu, cuda:0, cuda:1, etc)
-if policy_name == 'DRL_beta':
+if policy_name == 'DQN_beta':
     depth_sensor_name = 'DepthV1' # name of depth sensor camera to grab data from for observations
     # load the configuration of actor, observer, and terminators which defines how the environment steps through the policy
     actor, observer, terminators = Config.beta(agent, depth_sensor_name=depth_sensor_name)
@@ -54,6 +54,7 @@ from OmniNaviPy.modules import Spawner
 curriculum_path = Path(Utils.get_global('repository_directory'), 'data', map_name, 'trajectories', 'astar_1', 'test_curriculum.p')
 difficulties = ['low', '5', '6', '7', '8', '9', '10', '11', '12', '13'] # if None then will read all difficulties from file, otherwise expects a list of difficulty keys
 n_per_difficulty = 10 # if None then will read all trajectories from file, otherwise an integer value specifying number of trajectories to evaluate PER DIFFICULTY
+print('curriculum_path', curriculum_path)
 trajectories = Trajectory.read_curriculum(curriculum_path, difficulties, n_per_difficulty, as_list=True)
 # create spawner object to call at start of each episode and load the next ground truth trajectory
 spawner = Spawner.Spawner(agent, trajectories)
