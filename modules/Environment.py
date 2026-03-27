@@ -32,9 +32,6 @@ class Episodic:
         self.terminators = terminators
         self.others = others
         self.view_initialized = False
-
-        self.old_episodes = Utils.pickle_read('episodes.p') # used for checkpointing, will read in any already written episodes.p to continue evaluations until it reaches the maximum number of episodes, if overwrite=False when calling run.run()
-        self.old_episode_idx = 0
         
     # step through an entire episode with environment, generationg actions from model
     # model can be any object that has a predict() function as shown below
@@ -99,8 +96,6 @@ class Episodic:
     
     # start a new episode
     def start(self, save_observations=False):
-        self.old_episode = self.old_episodes[self.old_episode_idx]
-        self.old_episodes_step = 0
 
         # query spawner to set initial state of agent and environment
         episode = self.spawner.spawn(save_observations)
@@ -119,11 +114,6 @@ class Episodic:
 
     # intermediate steps of episode
     def step(self, episode):
-        
-        self.old_episodes_step += 1
-        #old_state = self.old_episode[self.old_episodes_step]
-        #print('OLD STATE', old_state['point'])
-        #old_action_value = old_state['action_value']
 
         # start a new step
         episode.new_step() 
@@ -167,10 +157,6 @@ class Episodic:
                 print(f'reason: {reason}')
             #pause = input('Press Enter to continue to next step...') # pause after each step for easier visualization
 
-            #if action_value != old_action_value:
-            #    print(f'Action value changed from {old_action_value} to {action_value} at episode {self.old_episode_idx} step {self.old_episodes_step}')
-            #    pause = input('Press Enter to continue...')
-
         return terminate
 
     # end of epsiode
@@ -185,8 +171,6 @@ class Episodic:
         for other in self.others:
             other.end(episode)
         self.agent.end(episode)
-
-        self.old_episode_idx += 1
 
 
 
