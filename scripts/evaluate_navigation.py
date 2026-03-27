@@ -112,6 +112,6 @@ for path_idx in episodes:
     if termination == 'goal_reached':
         n_successes += 1
 accuracy = 100 * n_successes / len(episodes)
-print(f'finished with accuracy {accuracy:.2f}%')
+print(f'finished with accuracy {accuracy:.2f}% in {stopwatch.stop():.2f} seconds')
 metrics['accuracy'] = accuracy
 Utils.json_write(metrics_write_path, metrics)
