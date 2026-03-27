@@ -1,4 +1,4 @@
-name: test
+name: DataMap
 channels:
   - defaults
 dependencies:
@@ -87,4 +87,4 @@ dependencies:
       - triton==3.6.0
       - typing-extensions==4.15.0
       - typing-inspection==0.4.2
-prefix: /home/tim/anaconda3/envs/test
+prefix: /home/tim/anaconda3/envs/DataMap
