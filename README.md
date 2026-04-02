@@ -26,7 +26,7 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 
 1. Set your python environment variable to point to the home directory which this repository lives, so that it can import modules from OmniNaviPy.
 
-2. Download the required data to run the _MicrosoftAirSim_ agent, as found on Microsoft's release page here: https://github.com/microsoft/airsim/releases, unzip and note the path to either the .sh or .exe executable file for later. You will also need to download Microsoft Visual Studio Code with C++ development, and directx (if on Windows).
+2. Download the required data to run the _MicrosoftAirSim_ agent, as found on Microsoft's release page here: https://github.com/microsoft/airsim/releases. Specifically you need the AirSimNH release zip file to run **Firt Run** below. Unzip and note the path to either the .sh or .exe executable file for later. You will also need to download Microsoft Visual Studio Code with C++ development, and directx (if on Windows).
 
 3. Downlad the required data to run the _DataMap_ agent. This can be found on the public Dropbox at: https://www.dropbox.com/scl/fo/9zibc89vm58ypqfdl7vgz/AOuoLZtU-VuOPdJoEVXsFIc?rlkey=hc74tvl9ui045kwd7fomien35&st=r64plkhb&dl=0. Specifically you need the AirSimNH data and the DQN_beta policy to run **Firt Run** below. Drop the sub-folders directly into the github parent folder such as: OmniNaviPy/data and OmniNaviPy/policies. Note that if you follow the samea data structure, that this agent works with any collection of data for any environment (real or sim).
 
