@@ -34,7 +34,7 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 
 🚀 **First Run**
 
-Open the evaluate_navigation.py file and set the path to your unzipped AirSim executable as noted from before, on line 6: release_path='path/to/your/.exe/or/.sh'
+Open the evaluate_navigation.py file and set the path to your unzipped AirSim executable as noted from before, on line 7: release_path='path/to/your/.exe/or/.sh'
 
 Run the evaluate_navigation.py file to test run everything, which by default will use the _DataMap_ agent and a two-tier navigational framework that uses the DQN_beta policy (previosly trained via DRL) to direct the drone which actions to take. Feel free to play with the paramters after that. Happy navigating!
 
