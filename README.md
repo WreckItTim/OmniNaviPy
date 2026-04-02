@@ -34,7 +34,7 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 
 5. Install pytorch seperately depending on you nvidia driver and cuda versions (for each virtual environment): https://pytorch.org/
 
-6. install Ollama if you wish to use the MLLM: https://ollama.com/download
+6. install Ollama if you wish to use the MLLM: https://ollama.com/download. Then pull the model you want to use (to run **Firt Run** below, ollama pull gemma3:27b). You may need to set this to a smaller model based on your machine's GPU.
 
 🚀 **First Run**
 
