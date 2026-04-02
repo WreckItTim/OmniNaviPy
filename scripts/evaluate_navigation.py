@@ -3,6 +3,9 @@ from pathlib import Path
 
 stopwatch = Utils.Stopwatch()
 
+# set absolute path to AirSim release .sh/.exe file, or set to None if you launch AirSim separately
+release_path = ''
+
 ## set random seed for reproducibility
 seed = 777
 Utils.set_random_seed(seed)
@@ -14,8 +17,6 @@ map_name = 'AirSimNH' # which map to use, should correspond to that in the data 
 # Microsoft AirSim (realistic physics-based simulator ran in real-time)
 if agent_type == 'MicrosoftAirSim':
     from OmniNaviPy.modules import MicrosoftAirSim
-    # set absolute path to AirSim release .sh/.exe file (assumes Linux .sh files), or set to None if you have already launched AirSim separately
-    release_path = Path(Utils.get_global('repository_directory'), 'local', 'airsim_maps', map_name, 'LinuxNoEditor', f'{map_name}.sh')
     flags = ['-windowed'] # command line arguments to pass when launching AirSim, this uses windowed rather than fulls screen
     clock_speed = 10 # speed up (>1) or slow down (<1) the simulation, generally don't go higher than 10, depends on your setup
     move_speed = 1 # speed at which drone moves when taking an action, in meters per second
