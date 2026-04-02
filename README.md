@@ -32,7 +32,7 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 
 4. Each agent has a different python virtual environment, conda. Particularly pesky is the _MicrosoftAirSim_ agent which has compadibliity issues with outdated and depreciated tornado, msgpackrpc, and airsim third-party python libraries. You can find these in the envs subfolder of this repository, which are given as both requirements.txt and environment.yml files to install on your local computer via conda or some other virtual python environment. Note that the environment may require a specific pip version along withy python version, see the top of the requirements.txt file for both of these. Macke sure to activate the proper environment first before running any python scripts that use that specific agent!
 
-5. You may need to change the torch installation depending on you machine, nvidia driver, OS, and cuda versions.
+5. You may need to change the torch installation depending on you machine, nvidia driver, OS, and cuda versions. https://pytorch.org/
 
 🚀 **First Run**
 
