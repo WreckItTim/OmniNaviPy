@@ -32,9 +32,11 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 
 4. Each agent has a different python virtual environment, conda. Particularly pesky is the _MicrosoftAirSim_ agent which has compadibliity issues with outdated and depreciated tornado, msgpackrpc, and airsim third-party python libraries. You can find these in the envs subfolder of this repository, which are given as both requirements.txt and environment.yml files to install on your local computer via conda or some other virtual python environment. Note that the environment may require a specific pip version along withy python version, see the top of the requirements.txt file for both of these. Macke sure to activate the proper environment first before running any python scripts that use that specific agent!
 
-5. Pip install pytorch seperately depending on you nvidia driver and cuda versions (for each virtual environment): https://pytorch.org/. If using MicrosoftAirSim environment, then pip install backports.ssl_match_hostname (this is to patch a compatibility error). If you are still getting errors from running AirSim then follow this up with pip install tornado==4.5.3.
+5. Pip install pytorch seperately depending on you nvidia driver and cuda versions (for each virtual environment): https://pytorch.org/. 
 
 6. install Ollama if you wish to use the MLLM: https://ollama.com/download. Pip install ollama for the given environment. Then pull the model you want to use (to run **Firt Run** below, ollama pull gemma3:27b). You may need to set this to a smaller model based on your machine's GPU.
+
+7. If using the _MicrosoftAirSim_ environment, then pip install backports.ssl_match_hostname (this is to patch a compatibility error). If you are still getting errors from running AirSim then follow this up with pip install tornado==4.5.3.
 
 🚀 **First Run**
 
