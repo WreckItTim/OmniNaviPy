@@ -1,6 +1,6 @@
 🔄 **The main control engine (Environment.py)**
 
-At the heart of the framework is the Episodic class, which manages the step-by-step operational lifecycle of any connected agent. Highly modular by design, this class enforces a strict, cyclical pipeline during each step:
+At the heart of the framework is the episodic Environment class, which manages the step-by-step operational lifecycle of any connected agent. Highly modular by design, this class enforces a strict, cyclical pipeline during each step:
 
 _Observe:_ Fetch real-time or cached environmental data using abstract sensor objects equipped on the agent, and execute any vision models to further process data for downstream tasks.
 
