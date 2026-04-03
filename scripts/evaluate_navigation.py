@@ -4,9 +4,9 @@ from pathlib import Path
 stopwatch = Utils.Stopwatch()
 
 # set absolute path to AirSim release .sh/.exe file, or set to None if you launch AirSim separately
-release_path = 'C:\\Users\\tim\\github\\OmniNaviPy\\local\\airsim_maps\\AirSimNH\\AirSimNH.exe'
-mllm_model = 'gemma3:27b' # name of llama model to use, default to 'gemma3:27b', None will not use MLLM
-agent_type = 'MicrosoftAirSim' # options: 'MicrosoftAirSim', 'DataMap'
+release_path = 'path/to/AirSimNH.sh/or/AirSimNH.exe'
+mllm_model = None # 'gemma3:27b' # name of llama model to use, default to 'gemma3:27b', None will not use MLLM
+agent_type = 'DataMap' # options: 'MicrosoftAirSim', 'DataMap'
 
 ## set random seed for reproducibility
 seed = 777
