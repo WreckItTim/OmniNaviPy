@@ -128,24 +128,25 @@ class World:
             return
         relative_occupancy_grid, bounds = self.get_relative_occupancy_grid(depth_map, point)
         horizon = 255
-        if point.direction == 0:
+        direction = point.get_direction()
+        if direction == 0:
             xmin = point.x - horizon
             xmax = point.x + horizon
             ymin = point.y
             ymax = point.y + horizon 
-        if point.direction == 1:
+        if direction == 1:
             relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=1)
             xmin = point.x
             xmax = point.x + horizon
             ymin = point.y - horizon
             ymax = point.y + horizon
-        if point.direction == 2:
+        if direction == 2:
             relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=2)
             xmin = point.x - horizon
             xmax = point.x + horizon
             ymin = point.y - horizon 
             ymax = point.y
-        if point.direction == 3:
+        if direction == 3:
             relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=3)
             xmin = point.x - horizon
             xmax = point.x
@@ -154,16 +155,17 @@ class World:
         self.update_grid(relative_occupancy_grid.T, xmin, xmax, ymin, ymax)
 
     def update_grid(self, occ_grid, xmin, xmax, ymin, ymax):
+        xmin, xmax, ymin, ymax = int(xmin), int(xmax), int(ymin), int(ymax)
         # bound inside of world grid
-        xmin2 = max(self.global_min_x, xmin)
-        xmax2 = min(self.global_max_x, xmax)
-        ymin2 = max(self.global_min_y, ymin)
-        ymax2 = min(self.global_max_y, ymax)
+        xmin2 = int(max(self.global_min_x, xmin))
+        xmax2 = int(min(self.global_max_x, xmax))
+        ymin2 = int(max(self.global_min_y, ymin))
+        ymax2 = int(min(self.global_max_y, ymax))
         occ_grid = occ_grid[xmin2-xmin:xmax2-xmin, ymin2-ymin:ymax2-ymin]
-        world_grid = self.grid[xmin2-self.global_min_x:xmax2-self.global_min_x, ymin2-self.global_min_y:ymax2-self.global_min_y]
+        world_grid = self.global_grid[xmin2-self.global_min_x:xmax2-self.global_min_x, ymin2-self.global_min_y:ymax2-self.global_min_y]
         flip_mask = (occ_grid>-1)
         world_grid[flip_mask] = occ_grid[flip_mask]
-        self.grid[xmin2-self.global_min_x:xmax2-self.global_min_x, ymin2-self.global_min_y:ymax2-self.global_min_y] = world_grid
+        self.global_grid[xmin2-self.global_min_x:xmax2-self.global_min_x, ymin2-self.global_min_y:ymax2-self.global_min_y] = world_grid
 
 
 

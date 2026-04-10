@@ -5,7 +5,8 @@ stopwatch = Utils.Stopwatch()
 
 # set absolute path to AirSim release .sh/.exe file, or set to None if you launch AirSim separately
 release_path = 'path/to/AirSimNH.sh/or/AirSimNH.exe'
-mllm_model = None # 'gemma3:27b' # name of llama model to use, default to 'gemma3:27b', None will not use MLLM
+
+mllm_model = 'None' # 'gemma3:27b' # name of llama model to use, default to 'gemma3:27b', None will not use MLLM
 agent_type = 'DataMap' # options: 'MicrosoftAirSim', 'DataMap'
 
 ## set random seed for reproducibility
@@ -56,7 +57,6 @@ from OmniNaviPy.modules import Spawner
 curriculum_path = Path(Utils.get_global('repository_directory'), 'data', map_name, 'trajectories', 'astar_1', 'test_curriculum.p')
 difficulties = ['low', '5', '6', '7', '8', '9', '10', '11', '12', '13'] # if None then will read all difficulties from file, otherwise expects a list of difficulty keys
 n_per_difficulty = 10 # if None then will read all trajectories from file, otherwise an integer value specifying number of trajectories to evaluate PER DIFFICULTY
-print('curriculum_path', curriculum_path)
 trajectories = Trajectory.read_curriculum(curriculum_path, difficulties, n_per_difficulty, as_list=True)
 # create spawner object to call at start of each episode and load the next ground truth trajectory
 spawner = Spawner.Spawner(agent, trajectories)

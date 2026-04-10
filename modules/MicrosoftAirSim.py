@@ -100,6 +100,7 @@ class MicrosoftAirSim(Agent.Agent):
         self.fixed_z = fixed_z
         self.discrete_space = discrete_space
         self.make_settings(additional_settings) # create settings file with specified settings and save path to self.settings_path
+        print('release_path', release_path)
         if release_path is not None:
             self.launch() # launch and airsim instance and connect to it
         else:

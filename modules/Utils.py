@@ -36,6 +36,7 @@ def set_directories():
 	file_path = Path(__file__).resolve()
 	# get root repository directory from this file (assumes this is in repository/modules/utils.py)
 	repository_directory = file_path.parent.parent
+	print('repository_directory', repository_directory)
 	# set globals for access throughout repository
 	set_global('repository_directory', repository_directory)
 	# set all sub directories

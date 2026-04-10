@@ -61,3 +61,16 @@ class Point:
     def __repr__(self):
         return str(self)
         
+
+    # returns integer value indicating direction robot is facing, given yaw
+    def get_direction(self):
+        yaw = self.yaw
+        if yaw  < 45 or yaw >= 315:
+            direction = 1
+        elif yaw >= 45 and yaw < 135:
+            direction = 0
+        elif yaw  >= 135 and yaw < 225:
+            direction = 3
+        elif yaw  >= 225 and yaw < 315:
+            direction = 2
+        return direction

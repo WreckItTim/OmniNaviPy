@@ -140,15 +140,15 @@ class HighLevelPolicy(Other):
         self.stop_checking = False
         self.strategy_history = []
         if self.explore_map and self.include_map:
-            self.world = World.World(self.x_max-self.x_min, self.y_max-self.y_min, self.x_min, self.y_max)
+            self.world = World.World(self.x_max-self.x_min, self.y_max-self.y_min, self.x_min, self.y_min)
     
     # check if we iterate to next waypoint
     def step(self, episode:Episode.Episode):
 
         # update global map?
-        if self.explore_map and self.include_map and  self.show_occupancy_grid:
-           # self.world.update_map_from_depth_with_pitch_roll(episode.get_depth_map(), episode.point)
-           self.world.update(episode.get_depth_map(), episode.point)
+        if self.explore_map and self.include_map and self.show_occupancy_grid:
+            # self.world.update_map_from_depth_with_pitch_roll(episode.get_depth_map(), episode.point)
+            self.world.update(episode.get_depth_map(), episode.point)
 
         # make map for display purposes only
         self.generate_map(episode, False)
@@ -172,7 +172,7 @@ class HighLevelPolicy(Other):
         map_grid = np.zeros((self.x_max-self.x_min, self.y_max-self.y_min, 3), dtype=np.uint8)
         if self.show_occupancy_grid:
             if self.explore_map:
-                world_grid = self.world.global_grid.T
+                world_grid = self.world.global_grid
                 map_grid[world_grid==-1] = (128, 128, 128) # grey unknown space
                 map_grid[world_grid==0] = (0, 0, 0) # black free space
                 map_grid[world_grid==1] = (255, 255, 255) # white occupied space
