@@ -71,7 +71,7 @@ class HighLevelPolicy(Other):
     def __init__(self, agent, observer=None, model='gemma3:27b', silent=False, cuda_device=None, options={}, image_path=None, image_path2=None,
                  include_map=True, include_path_history=True, include_waypoints=True, include_state=True, chain_of_thought=False,
                  explore_map=True, progress_threshold=1, waypoint_threshold=4, n_points=8, generate_waypoints=True,
-                 x_min=None, x_max=None, y_min=None, y_max=None, resolution=1, ground_truth_global_grid=None, show_occupancy_grid=False):
+                 x_min=None, x_max=None, y_min=None, y_max=None, resolution=1, ground_truth_global_grid=None, show_occupancy_grid=True):
         self.agent = agent
         self.observer = observer
         self.model = model
@@ -147,7 +147,8 @@ class HighLevelPolicy(Other):
 
         # update global map?
         if self.explore_map and self.include_map and  self.show_occupancy_grid:
-            self.world.update_map_from_depth(episode.get_depth_map(), episode.point)
+           # self.world.update_map_from_depth_with_pitch_roll(episode.get_depth_map(), episode.point)
+           self.world.update(episode.get_depth_map(), episode.point)
 
         # make map for display purposes only
         self.generate_map(episode, False)
