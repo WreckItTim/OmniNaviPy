@@ -19,6 +19,154 @@ class World:
         self.global_min_y = origin_y
         self.global_max_y = origin_y + global_height - 1
 
+
+
+    # is_planar_depth is an option to treat depth values as planar Z values instead of radial/Euclidean distances
+    # makes grid where -1 denotes unknown space, 0 denotes free space, and 1 denotes occupied space
+    # point is the location of the camera in the world frame
+    # roll and pitch are in radians
+    # outputs 1 meter resolution grid and the min/max x and z values of the grid in meters
+    def get_relative_occupancy_grid(self, depth_map, point, height_range=(-3, 3), horizon=255, is_planar_depth=False,
+                            horizontal_fov=90, vertical_fov=90, roll=0, pitch=0):
+
+        # X axis points right, Y axis points upward, Z axis points forward in camera frame
+
+        # set intrinsic camera parameters
+        height, width = depth_map.shape
+
+        # calulate focal length based on horizontal and vertical FOV, and image dimensions
+        fx = width / (2.0 * np.tan(np.deg2rad(horizontal_fov) / 2.0))
+        fy = height / (2.0 * np.tan(np.deg2rad(vertical_fov) / 2.0))
+        
+        # assume principal point is at center of image
+        cx = width / 2.0
+        cy = height / 2.0 
+
+        # calculate 3D pixel coordinates
+        v, u = np.indices((height, width))
+        x_norm = (u - cx) / fx
+        y_norm = (v - cy) / fy
+        if is_planar_depth:
+            z = depth_map
+        else:
+            z = depth_map / np.sqrt(x_norm**2 + y_norm**2 + 1.0)
+        x, y = x_norm * z, y_norm * z # multiply by depth to get 3D coordinates in camera frame
+        
+        ## rotate pixels to adjust for pitch and roll
+        # pitch (around X axis)
+        Rx = np.array([
+            [1, 0, 0],
+            [0, np.cos(pitch), -np.sin(pitch)],
+            [0, np.sin(pitch), np.cos(pitch)]
+        ])
+        # roll (around Z axis)
+        Rz = np.array([
+            [np.cos(roll), -np.sin(roll), 0],
+            [np.sin(roll), np.cos(roll), 0],
+            [0, 0, 1]
+        ])
+        # combined rotation matrix
+        R = np.matmul(Rz, Rx)
+        # rotate x, y, z coordinates to global orientation frame -- returns flattened
+        x, y, z = np.matmul(R, np.vstack((x.ravel(), y.ravel(), z.ravel())))
+
+        # only get depths less than horizon and greater than 0
+        mask = (z < horizon) & (z > 0)
+        # filter out points outside of height range (like the ground and high-hanging telephone wires)
+        if height_range is not None:
+            y_min, y_max = height_range
+            mask &= (y >= y_min) & (y <= y_max)
+        # apply mask to only consider pixels that meet the above criteria
+        u, z = u.ravel()[mask], z[mask]
+
+        # we want to find the closest object at each u-index column
+        obstacles = np.full(width, np.inf)
+        if len(u) > 0:
+            np.minimum.at(obstacles, u, z)
+        
+        # make XZ occupancy grid where -1 denotes unknown space, 0 denotes free space, and 1 denotes occupied space
+        x_min, x_max = -horizon, horizon 
+        z_min, z_max = 0, horizon
+        grid_width = int(np.ceil((x_max - x_min)))
+        grid_height = int(np.ceil((z_max - z_min)))
+        occupancy_grid = np.full((grid_height, grid_width), -1, dtype=np.int8)
+        
+        # make grid of x and z coordinates where each pixel is cenetered at the middle of the pixel
+        x_coords = np.linspace(x_min + 1/2, x_max - 1/2, grid_width)
+        z_coords = np.linspace(z_min + 1/2, z_max - 1/2, grid_height)
+        X_grid, Z_grid = np.meshgrid(x_coords, z_coords)
+
+        # rotate back to camera frame
+        X_grid, _, Z_grid = np.matmul(R.T, np.vstack((X_grid.ravel(), np.zeros_like(X_grid.ravel()), Z_grid.ravel()))).reshape(3, grid_height, grid_width)
+    
+        # translate rotated x-values to indicies
+        u_grid = np.round((X_grid * fx / (Z_grid + 1e-6)) + cx).astype(np.int32)
+        
+        # only consider pixels in our field of view defined by x_min and x_max
+        mask = (u_grid >= 0) & (u_grid < width)
+        u_grid = u_grid[mask]
+        Z_grid = Z_grid[mask]
+        obstacles = obstacles[u_grid]
+
+        # free space is where the depth value is less than the obstacle depth
+        free_space = Z_grid < (obstacles - 1)
+
+        # occupied space is padded around the obstacle depth to account for noise
+        occupied_space = (np.abs(Z_grid - obstacles) <= (1.5)) & (obstacles != np.inf)
+        
+        # update occupancy grid values based on free and occupied space
+        flat_grid = occupancy_grid[mask]
+        flat_grid[free_space] = 0
+        flat_grid[occupied_space] = 1
+        occupancy_grid[mask] = flat_grid
+        
+        return occupancy_grid, (x_min, x_max, z_min, z_max)
+        
+    def update(self, depth_map, point):
+        x, y = point.x, point.y
+        if x < self.global_min_x or x >= self.global_max_x or y < self.global_min_y or y >= self.global_max_y:
+            return
+        relative_occupancy_grid, bounds = self.get_relative_occupancy_grid(depth_map, point)
+        horizon = 255
+        if point.direction == 0:
+            xmin = point.x - horizon
+            xmax = point.x + horizon
+            ymin = point.y
+            ymax = point.y + horizon 
+        if point.direction == 1:
+            relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=1)
+            xmin = point.x
+            xmax = point.x + horizon
+            ymin = point.y - horizon
+            ymax = point.y + horizon
+        if point.direction == 2:
+            relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=2)
+            xmin = point.x - horizon
+            xmax = point.x + horizon
+            ymin = point.y - horizon 
+            ymax = point.y
+        if point.direction == 3:
+            relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=3)
+            xmin = point.x - horizon
+            xmax = point.x
+            ymin = point.y - horizon
+            ymax = point.y + horizon
+        self.update_grid(relative_occupancy_grid.T, xmin, xmax, ymin, ymax)
+
+    def update_grid(self, occ_grid, xmin, xmax, ymin, ymax):
+        # bound inside of world grid
+        xmin2 = max(self.global_min_x, xmin)
+        xmax2 = min(self.global_max_x, xmax)
+        ymin2 = max(self.global_min_y, ymin)
+        ymax2 = min(self.global_max_y, ymax)
+        occ_grid = occ_grid[xmin2-xmin:xmax2-xmin, ymin2-ymin:ymax2-ymin]
+        world_grid = self.grid[xmin2-self.global_min_x:xmax2-self.global_min_x, ymin2-self.global_min_y:ymax2-self.global_min_y]
+        flip_mask = (occ_grid>-1)
+        world_grid[flip_mask] = occ_grid[flip_mask]
+        self.grid[xmin2-self.global_min_x:xmax2-self.global_min_x, ymin2-self.global_min_y:ymax2-self.global_min_y] = world_grid
+
+
+
     # input a depth map taken at the given pose with the given camera parameters, and update the global occupancy grid 
     # assumed point coordinate system of global frame are in standard euclidean and euler space as used throughout this repository
     # all angles are input as degrees
@@ -29,7 +177,7 @@ class World:
         # Pitch (Rx): Rotation around the local X-axis. Positive Pitch tilts the camera down towards the floor. Negative Pitch tilts the camera up towards the sky.
         # Roll (Rz): Rotation around the local Z-axis. Positive Roll tilts the camera counter-clockwise (left wing down, right wing up).
         # Yaw (Heading): Rotation applied to the 2D plane. Positive Yaw rotates the robot Counter-Clockwise (turning left). A Negative Yaw turns the robot right.
-    def update_map_from_depth(self, depth_map, point, is_planar_depth=True,
+    def update_map_from_depth_with_pitch_roll(self, depth_map, point, is_planar_depth=True,
                               horizontal_fov=90.0, vertical_fov=90.0, height_range=(-3.0, 3.0), horizon=255.0):
 
         # convert input coordinates to match the coordinate system used in calculations
@@ -152,149 +300,3 @@ class World:
         self.global_grid[idx_min_y:idx_max_y+1, idx_min_x:idx_max_x+1] = patch
         
         return self.global_grid
-
-
-
-    # # is_planar_depth is an option to treat depth values as planar Z values instead of radial/Euclidean distances
-    # # makes grid where -1 denotes unknown space, 0 denotes free space, and 1 denotes occupied space
-    # # point is the location of the camera in the world frame
-    # # roll and pitch are in radians
-    # # outputs 1 meter resolution grid and the min/max x and z values of the grid in meters
-    # def get_relative_occupancy_grid(self, depth_map, point, height_range=(-3, 3), horizon=255, is_planar_depth=False,
-    #                         horizontal_fov=90, vertical_fov=90, roll=0, pitch=0):
-
-    #     # X axis points right, Y axis points upward, Z axis points forward in camera frame
-
-    #     # set intrinsic camera parameters
-    #     height, width = depth_map.shape
-
-    #     # calulate focal length based on horizontal and vertical FOV, and image dimensions
-    #     fx = width / (2.0 * np.tan(np.deg2rad(horizontal_fov) / 2.0))
-    #     fy = height / (2.0 * np.tan(np.deg2rad(vertical_fov) / 2.0))
-        
-    #     # assume principal point is at center of image
-    #     cx = width / 2.0
-    #     cy = height / 2.0 
-
-    #     # calculate 3D pixel coordinates
-    #     v, u = np.indices((height, width))
-    #     x_norm = (u - cx) / fx
-    #     y_norm = (v - cy) / fy
-    #     if is_planar_depth:
-    #         z = depth_map
-    #     else:
-    #         z = depth_map / np.sqrt(x_norm**2 + y_norm**2 + 1.0)
-    #     x, y = x_norm * z, y_norm * z # multiply by depth to get 3D coordinates in camera frame
-        
-    #     ## rotate pixels to adjust for pitch and roll
-    #     # pitch (around X axis)
-    #     Rx = np.array([
-    #         [1, 0, 0],
-    #         [0, np.cos(pitch), -np.sin(pitch)],
-    #         [0, np.sin(pitch), np.cos(pitch)]
-    #     ])
-    #     # roll (around Z axis)
-    #     Rz = np.array([
-    #         [np.cos(roll), -np.sin(roll), 0],
-    #         [np.sin(roll), np.cos(roll), 0],
-    #         [0, 0, 1]
-    #     ])
-    #     # combined rotation matrix
-    #     R = np.matmul(Rz, Rx)
-    #     # rotate x, y, z coordinates to global orientation frame -- returns flattened
-    #     x, y, z = np.matmul(R, np.vstack((x.ravel(), y.ravel(), z.ravel())))
-
-    #     # only get depths less than horizon and greater than 0
-    #     mask = (z < horizon) & (z > 0)
-    #     # filter out points outside of height range (like the ground and high-hanging telephone wires)
-    #     if height_range is not None:
-    #         y_min, y_max = height_range
-    #         mask &= (y >= y_min) & (y <= y_max)
-    #     # apply mask to only consider pixels that meet the above criteria
-    #     u, z = u.ravel()[mask], z[mask]
-
-    #     # we want to find the closest object at each u-index column
-    #     obstacles = np.full(width, np.inf)
-    #     if len(u) > 0:
-    #         np.minimum.at(obstacles, u, z)
-        
-    #     # make XZ occupancy grid where -1 denotes unknown space, 0 denotes free space, and 1 denotes occupied space
-    #     x_min, x_max = -horizon, horizon 
-    #     z_min, z_max = 0, horizon
-    #     grid_width = int(np.ceil((x_max - x_min)))
-    #     grid_height = int(np.ceil((z_max - z_min)))
-    #     occupancy_grid = np.full((grid_height, grid_width), -1, dtype=np.int8)
-        
-    #     # make grid of x and z coordinates where each pixel is cenetered at the middle of the pixel
-    #     x_coords = np.linspace(x_min + 1/2, x_max - 1/2, grid_width)
-    #     z_coords = np.linspace(z_min + 1/2, z_max - 1/2, grid_height)
-    #     X_grid, Z_grid = np.meshgrid(x_coords, z_coords)
-
-    #     # rotate back to camera frame
-    #     X_grid, _, Z_grid = np.matmul(R.T, np.vstack((X_grid.ravel(), np.zeros_like(X_grid.ravel()), Z_grid.ravel()))).reshape(3, grid_height, grid_width)
-    
-    #     # translate rotated x-values to indicies
-    #     u_grid = np.round((X_grid * fx / (Z_grid + 1e-6)) + cx).astype(np.int32)
-        
-    #     # only consider pixels in our field of view defined by x_min and x_max
-    #     mask = (u_grid >= 0) & (u_grid < width)
-    #     u_grid = u_grid[mask]
-    #     Z_grid = Z_grid[mask]
-    #     obstacles = obstacles[u_grid]
-
-    #     # free space is where the depth value is less than the obstacle depth
-    #     free_space = Z_grid < (obstacles - 1)
-
-    #     # occupied space is padded around the obstacle depth to account for noise
-    #     occupied_space = (np.abs(Z_grid - obstacles) <= (1.5)) & (obstacles != np.inf)
-        
-    #     # update occupancy grid values based on free and occupied space
-    #     flat_grid = occupancy_grid[mask]
-    #     flat_grid[free_space] = 0
-    #     flat_grid[occupied_space] = 1
-    #     occupancy_grid[mask] = flat_grid
-        
-    #     return occupancy_grid, (x_min, x_max, z_min, z_max)
-        
-    # def update(self, depth_map, point):
-    #     x, y = point.x, point.y
-    #     if x < self.xmin or x >= self.xmax or y < self.ymin or y >= self.ymax:
-    #         return
-    #     relative_occupancy_grid, bounds = self.get_relative_occupancy_grid(depth_map, point)
-    #     horizon = 255
-    #     if point.direction == 0:
-    #         xmin = point.x - horizon
-    #         xmax = point.x + horizon
-    #         ymin = point.y
-    #         ymax = point.y + horizon 
-    #     if point.direction == 1:
-    #         relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=1)
-    #         xmin = point.x
-    #         xmax = point.x + horizon
-    #         ymin = point.y - horizon
-    #         ymax = point.y + horizon
-    #     if point.direction == 2:
-    #         relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=2)
-    #         xmin = point.x - horizon
-    #         xmax = point.x + horizon
-    #         ymin = point.y - horizon 
-    #         ymax = point.y
-    #     if point.direction == 3:
-    #         relative_occupancy_grid = np.rot90(relative_occupancy_grid, k=3)
-    #         xmin = point.x - horizon
-    #         xmax = point.x
-    #         ymin = point.y - horizon
-    #         ymax = point.y + horizon
-    #     self.update_grid(relative_occupancy_grid.T, xmin, xmax, ymin, ymax)
-
-    # def update_grid(self, occ_grid, xmin, xmax, ymin, ymax):
-    #     # bound inside of world grid
-    #     xmin2 = max(self.xmin, xmin)
-    #     xmax2 = min(self.xmax, xmax)
-    #     ymin2 = max(self.ymin, ymin)
-    #     ymax2 = min(self.ymax, ymax)
-    #     occ_grid = occ_grid[xmin2-xmin:xmax2-xmin, ymin2-ymin:ymax2-ymin]
-    #     world_grid = self.grid[xmin2-self.xmin:xmax2-self.xmin, ymin2-self.ymin:ymax2-self.ymin]
-    #     flip_mask = (occ_grid>-1)
-    #     world_grid[flip_mask] = occ_grid[flip_mask]
-    #     self.grid[xmin2-self.xmin:xmax2-self.xmin, ymin2-self.ymin:ymax2-self.ymin] = world_grid
