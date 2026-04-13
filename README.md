@@ -7,6 +7,9 @@ NaviSlim https://ieeexplore.ieee.org/document/10562181
 NaviSplit https://ieeexplore.ieee.org/document/10579123
 SmartDepth https://ieeexplore.ieee.org/document/11096325
 
+Current projects in-the-works:
+WayFinder https://www.youtube.com/watch?v=8g6MtpyJgCM
+
 Please cite us if using this work:
 @INPROCEEDINGS{10562181, author={Johnsen, Timothy K and Levorato, Marco}, booktitle={2024 IEEE/ACM Ninth International Conference on Internet-of-Things Design and Implementation (IoTDI)}, title={NaviSlim: Adaptive Context-Aware Navigation and Sensing via Dynamic Slimmable Networks}, year={2024}, volume={}, number={}, pages={110-121}, keywords={Training;Adaptation models;Navigation;Computational modeling;Atmospheric modeling;Neural networks;Dynamic scheduling;Autonomous Systems;Dynamic Neural Networks;Drone Navigation;Sensor Fusion}, doi={10.1109/IoTDI61053.2024.00014}}
 
