@@ -319,10 +319,10 @@ class HighLevelPolicy(Other):
                 prompt_str = prompt_str[:-1]
                 prompt_str += ']. '
             if self.include_map:
-                #prompt_str += f'White pixels are obstacles. '
-                prompt_str += f'Black space is unknown. '
-                #if self.explore_map:
-                 #   prompt_str += f'Gray pixels are unknown. '
+                prompt_str += f'White pixels are obstacles. '
+                prompt_str += f'Black space is safe. '
+                if self.explore_map:
+                    prompt_str += f'Gray pixels are unknown. '
                 prompt_str += f'Only generate a waypoint at a safe{self.safe_token} (x, y) coordinate, and one that has not been attempted yet. '
                 prompt_str += f'Identify any complex obstacles that may block the robot from reaching the target. '
             prompt_str += f'Specifically format your response as: [STRATEGY]: reason for generating the waypoint. [WAYPOINT]: (x, y). '
@@ -344,10 +344,10 @@ class HighLevelPolicy(Other):
             prompt_str += f'The path history is indicated by the {self.history_token}. '
             prompt_str += f'Consider the previous attempted waypoints as indicated by {self.waypoints_token}, which were generated to try and unstuck the robot to no avail. '
             if self.include_map:
-                #prompt_str += f'White pixels are obstacles. '
-                prompt_str += f'Black space is unknown. '
-                #if self.explore_map:
-                 #   prompt_str += f'Gray pixels are unknown. '
+                prompt_str += f'White pixels are obstacles. '
+                prompt_str += f'Black space is safe. '
+                if self.explore_map:
+                    prompt_str += f'Gray pixels are unknown. '
                 prompt_str += f'Only generate a waypoint at a safe{self.safe_token} (x, y) coordinate, and one that has not been attempted yet. '
             if self.include_map or self.include_path_history:
                 prompt_str += f'Identify any complex obstacles that may block the robot from reaching the target. '
