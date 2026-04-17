@@ -36,10 +36,10 @@ class Point:
             self.roll = roll
     
     # xyz=True will calculate distance in 3D space, xyz=False will calculate distance in 2D space ignoring z value
-    def distance(self, point, xyz=True):
+    def distance(self, point, xyz=False):
         return np.linalg.norm(self.displacement(point, xyz))
 
-    def displacement(self, point, xyz=True):
+    def displacement(self, point, xyz=False):
         if xyz:
             return self.numpy()[:3] - point.numpy()[:3]
         return self.numpy()[:2] - point.numpy()[:2]
