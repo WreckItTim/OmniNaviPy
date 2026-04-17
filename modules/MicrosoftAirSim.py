@@ -361,7 +361,8 @@ class MicrosoftAirSim(Agent.Agent):
             if stabelize:
                 self.stabelize()
 
-        return DataStructure.Point(destination_position[0], destination_position[1], destination_position[2])
+        x, y, z = airsim_to_euclidean(destination_position[0], destination_position[1], destination_position[2])
+        return DataStructure.Point(x, y, z)
 
     # rotate relative to current yaw, rel_yaw is in degrees, positive for clockwise, negative for counter-clockwise
     def rotate(self, rel_yaw: float, threshold: float = 0.1, stabelize: bool = True, join: bool = True):
