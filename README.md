@@ -55,8 +55,21 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 
 🚀 **First Run**
 
-Open the evaluate_navigation.py file and set the path to your unzipped AirSim executable as noted from before, on line 7: release_path='path/to/your/.exe/or/.sh'
+There are four sets of results to replicate to insure the two agents are working, _DataMap_ and _MicrosoftAirSim_, and with and without the MLLM high-level policy (if using ollama).
 
-Run the evaluate_navigation.py file to test run everything, which by default will use the _DataMap_ agent and a two-tier navigational framework that uses the DQN_beta policy (previosly trained via DRL) to direct the drone which actions to take. Feel free to play with the paramters after that. Happy navigating!
+_DataMap_
 
-Note that this uses a static hold out set of trajectories to evaluate on, which should be held out from training all future policies. This creates a consistent testing metric across different configurations for robust model evaluations.
+without the MLLM: After unzipped all of the data, run the evaluate_navigation.py file as is. This should have mllm_model='None' and agent_type='DataMap'. You should obtain 85% navigation accuracy after it has finished.
+
+with the MLLM: Edit line 9 in evaluate_navigation.py by setting mllm_model='gemma3:27b'. Rerun evaluate_navigation.py. You should obtain 94% navigation accuracy after it has finished.
+
+_MicrosoftAirSim_
+
+Open the evaluate_navigation.py file and set the path to your unzipped AirSim executable  file (.sh or .exe) as noted before, on line 7: release_path='path/to/your/.exe/or/.sh'
+
+without the MLLM: Set the mllm_model = 'None', on line 9. Set the agent_type = 'DataMap', on line 10. You should obtain 85% navigation accuracy after it has finished.
+
+with the MLLM: Edit line 9 by setting mllm_model='gemma3:27b'. Rerun evaluate_navigation.py. You should obtain 94% navigation accuracy after it has finished.
+
+
+Feel free to play with the paramters after that. Happy navigating! Note that this uses a static hold out set of trajectories to evaluate on, which should be held out from training all future policies. This creates a consistent testing metric across different configurations for robust model evaluations.
