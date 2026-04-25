@@ -1,4 +1,6 @@
-local/
 data/*/
 policies/*/
-results/
+ignore/
+**/.ipynb_checkpoints
+**/__pycache__
+**/.vs
