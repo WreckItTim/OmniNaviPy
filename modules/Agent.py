@@ -15,6 +15,9 @@ class Agent(Component.Component):
     def start(self, episode):
         self.current_action = None
 
+    def disconnect(self):
+        pass
+
     # ******** ABSTRACT ACTION METHODS ********
 
     # how to increment time forward during act() 

@@ -70,7 +70,7 @@ class HighLevelPolicy(Other):
 
     def __init__(self, agent, observer=None, model='gemma3:27b', silent=False, cuda_device=None, options={}, image_path=None, image_path2=None,
                  include_map=True, include_path_history=True, include_waypoints=True, include_state=True, chain_of_thought=False,
-                 explore_map=True, progress_threshold=1, waypoint_threshold=4, n_points=8, generate_waypoints=True,
+                 explore_map=True, progress_threshold=1, waypoint_threshold=4, n_points=8, generate_waypoints=True, pause_after_waypoint=True,
                  x_min=None, x_max=None, y_min=None, y_max=None, resolution=1, ground_truth_global_grid=None, show_occupancy_grid=True):
         self.agent = agent
         self.observer = observer
@@ -89,6 +89,7 @@ class HighLevelPolicy(Other):
         self.explore_map = explore_map
         self.show_occupancy_grid = show_occupancy_grid
         self.generate_waypoints = generate_waypoints
+        self.pause_after_waypoint = pause_after_waypoint
         self.progress_threshold = progress_threshold
         self.waypoint_threshold = waypoint_threshold
         self.n_points = n_points
@@ -141,9 +142,14 @@ class HighLevelPolicy(Other):
         self.strategy_history = []
         if self.explore_map and self.include_map:
             self.world = World.World(self.x_max-self.x_min, self.y_max-self.y_min, self.x_min, self.y_min)
+        self.unpause = 0 # used to check trigger condition
     
     # check if we iterate to next waypoint
     def step(self, episode:Episode.Episode):
+
+        # check if we unpause
+        if len(episode.path_history) >= self.unpause:
+            self.stop_checking = False
 
         # update global map?
         if self.explore_map and self.include_map and self.show_occupancy_grid:
@@ -365,7 +371,7 @@ class HighLevelPolicy(Other):
         waypoint_idx = response.index(waypoint_phrase)
 
         # this indicates the reasoning into why the MLLM generated the given waypoint
-        strategy_phrase = '[STRATEGY]:'
+        strategy_phrase = '[STRATEGY]: '
         if strategy_phrase in response:
             strategy_idx = response.index(strategy_phrase)
             if waypoint_idx > strategy_idx:
@@ -374,6 +380,7 @@ class HighLevelPolicy(Other):
                 strategy = response[strategy_idx:].strip()
 
         # parse waypoint coordinates from MLLM response and set waypoint if valid
+        valid = False
         try:
             i = waypoint_idx+len(waypoint_phrase)+1
             substr = response[i:]
@@ -382,19 +389,23 @@ class HighLevelPolicy(Other):
             x, y = point_str.split(', ')
             x = int(x)
             y = int(y)
-            
-            waypoint = DataStructure.Point(x, y, self.agent.fixed_z)
-            current_goal = episode.waypoint if episode.waypoint is not None else episode.target_point
-            if current_goal.x != waypoint.x or current_goal.y != waypoint.y:
-                self.set_waypoint(episode, waypoint)
-                if strategy_phrase in response:
-                    self.strategy_history.append(strategy)
-                else:
-                    self.strategy_history.append('Unknown')
-            else:
-                self.stop_checking = True # otherwise this will now result in an infinite loop of generating the same waypoint
+            valid = True
         except Exception as exception:
             pass
+        
+        if not valid:
+            return
+
+        waypoint = DataStructure.Point(x, y, self.agent.fixed_z)
+        current_goal = episode.waypoint if episode.waypoint is not None else episode.target_point
+        if current_goal.x != waypoint.x or current_goal.y != waypoint.y:
+            self.set_waypoint(episode, waypoint)
+            if strategy_phrase in response:
+                self.strategy_history.append(strategy)
+            else:
+                self.strategy_history.append('Unknown')
+        else:
+            self.pause(episode) # otherwise this will now result in an infinite loop of generating the same waypoint
 
     # communicate with MLLM
     def chat(self, prompt, display_chat=True, episode=None):
@@ -406,9 +417,17 @@ class HighLevelPolicy(Other):
         if display_chat:
             print(response.message.content)
         return response.message.content
+
+    def pause(self, episode):
+        self.stop_checking = True
+        self.unpause = len(episode.path_history) + self.n_points
         
     # set a new intermediate waypoint
     def set_waypoint(self, episode, waypoint):
+
+        # pause checking for next trigger
+        if self.pause_after_waypoint:
+            self.pause(episode)
 
         # tell episode we have a new goal to navigate towards
         episode.waypoint = waypoint

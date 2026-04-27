@@ -53,23 +53,29 @@ _DataMap_ A high-speed execution mode that uses pre-cached observations at all (
 
 7. If using the _MicrosoftAirSim_ environment, then _pip install backports.ssl_match_hostname_ (this is to patch a compatibility error). If you are still getting errors from running AirSim then follow this up with _pip install tornado==4.5.3_.
 
+8. Run the setup.py file in the root directory. This will create an ignore folder that is in the .gitignore. It is advised to move the airsim_map files here and anything else local to your environment.
+
 🚀 **First Run**
 
 There are four sets of results to replicate to insure the two agents are working, _DataMap_ and _MicrosoftAirSim_, and with and without the MLLM high-level policy (if using ollama).
 
 _DataMap_
 
-without the MLLM: After unzipped all of the data, run the evaluate_navigation.py file as is. This should have mllm_model='None' and agent_type='DataMap'. You should obtain 85% navigation accuracy after it has finished.
+This uses pre-collected data saved in discritized space for the entire AirSim map. This enables training and evaluations without needing to launch and run the simulator. Running this results in 184x speedpus during training and evaluation over running the actual AirSim simulator.
 
-with the MLLM: Edit line 9 in evaluate_navigation.py by setting mllm_model='gemma3:27b'. Rerun evaluate_navigation.py. You should obtain 94% navigation accuracy after it has finished.
+Make sure that all of the data, for the given AirSim map you are using, is unzipped in the data folder.
+
+without the MLLM: Run the evaluate_navigation.py file as is. This should have mllm_model=None and agent_type='DataMap'. You should obtain 85% navigation accuracy after it has finished. This uses a DRL-trained policy, by default the DQN_beta version, to geenrate a motion command at each timestep that places the robot on a length-optimal trajectory to reach the target while moving around obstacles visible in the 2D depth maps captured from the robot's sensor. You should obtain 94% accuracy.
+
+with the MLLM: Edit line 9 in evaluate_navigation.py by setting mllm_model='gemma3:27b'. Rerun evaluate_navigation.py. You should obtain 94% navigation accuracy after it has finished. This adds a high-level policy to supervise the process. If the policy detects the robot's progress has stalled, it will generate an intermediate waypoint for the robot to navigate to before reaching the target location. This is accomplished by inputting the robot's state space along with a ray-traced world map into a zero-shot MLLM. You should obtain 98% accuracy.
 
 _MicrosoftAirSim_
 
+This launches and runs the AirSim simulator in real time. An ansynchronous PID controller executes the motion command output by the mid-level DRL-trained policy, which by default is DQN_beta.
+
 Open the evaluate_navigation.py file and set the path to your unzipped AirSim executable  file (.sh or .exe) as noted before, on line 7: release_path='path/to/your/.exe/or/.sh'
 
-without the MLLM: Set the mllm_model = 'None', on line 9. Set the agent_type = 'DataMap', on line 10. You should obtain 85% navigation accuracy after it has finished.
-
-with the MLLM: Edit line 9 by setting mllm_model='gemma3:27b'. Rerun evaluate_navigation.py. You should obtain 94% navigation accuracy after it has finished.
+without the MLLM: Set the mllm_model=None, on line 9. Set the agent_type='MicrosoftAirSim', on line 10. You should obtain 94% navigation accuracy after it has finished.
 
 
 Feel free to play with the paramters after that. Happy navigating! Note that this uses a static hold out set of trajectories to evaluate on, which should be held out from training all future policies. This creates a consistent testing metric across different configurations for robust model evaluations.

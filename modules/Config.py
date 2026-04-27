@@ -5,7 +5,7 @@ import numpy as np
 # discrete action space and discrete obsevation space
 # forward facing depth maps
 # move forward, strafe left, strafe right, rotate counter, rotate clockwise -- all at fixed altitude
-def beta(agent:Agent.Agent, depth_sensor_name='DepthV1', steps_multiplier = 8, goal_tolerance=4):
+def beta(agent:Agent.Agent, depth_sensor_name='DepthV1', steps_multiplier=8, goal_tolerance=4):
 
     # adjust agents movements for discrete space and fixed altitude
     agent.set_discrete_space(True)

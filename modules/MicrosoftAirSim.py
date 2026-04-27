@@ -491,7 +491,7 @@ class MicrosoftAirSim(Agent.Agent):
         time.sleep(2)
         
     # clean up loaded airsim resources
-    def close(self):
+    def disconnect(self):
         # this should keep child in tact to kill same process created (can handle multi in parallel)
         if self.pid is not None:
             try:
@@ -617,7 +617,7 @@ class MicrosoftAirSim(Agent.Agent):
 
         # temporary write to file to send path to AirSim at launch, since AirSim only accepts settings as a file path string and not as a dictionary or other data structure
         repository_dir = Utils.get_global('repository_directory')
-        self.settings_path = Path(repository_dir, 'local', 'temp_airsim_settings.json')
+        self.settings_path = Path(repository_dir, 'ignore', 'temp_airsim_settings.json')
         Utils.json_write(self.settings_path, settings)
         
 
